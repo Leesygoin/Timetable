@@ -10,7 +10,17 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.StudyManager"
+        android:name=".Global"
         tools:targetApi="31">
+        <activity
+            android:name=".TimeTable2"
+            android:exported="false" />
+        <activity
+            android:name=".AddDayView"
+            android:exported="false" />
+        <activity
+            android:name=".AddTimeView"
+            android:exported="false" />
         <activity
             android:name=".DialogActivity"
             android:exported="false" />

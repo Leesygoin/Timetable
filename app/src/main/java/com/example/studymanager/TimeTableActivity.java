@@ -4,11 +4,13 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 public class TimeTableActivity extends AppCompatActivity {
 
@@ -24,6 +26,11 @@ public class TimeTableActivity extends AppCompatActivity {
         addDia_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                Intent myIntent = new Intent(TimeTableActivity.this, DialogActivity.class);
+                startActivity(myIntent);
+
+                /*
                 AlertDialog.Builder builder = new AlertDialog.Builder(TimeTableActivity.this);
 
                 final View innerView = getLayoutInflater().inflate(R.layout.activity_dialog, null);
@@ -47,7 +54,7 @@ public class TimeTableActivity extends AppCompatActivity {
                         dialog.dismiss();
                     }
                 });
-                builder.show();
+                builder.show();*/
 
             }
         });
