@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.AlertDialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,12 +19,14 @@ import android.widget.Toast;
 public class DialogActivity extends AppCompatActivity {
 
     Button Tadd_button, Confirm_Button;
+    EditText className_edittext;
     TextView dayText, Time1Text, Time2Text, MonText, TueText, WedText, ThuText, FriText;
     View.OnClickListener clickListener, onClickListener;
     private final int VIEW_ID = 0x8000;
     private final int BUTTON_ID = 0x9000;
     int dayID;
-    int day;
+    String day = "monday";//, hour1="15", hour2="15", min1="30", min2="30";
+    int hour1=15, hour2=15, min1=30, min2=30;
     private Integer viewNum = 0;
 
     @Override
@@ -32,13 +35,27 @@ public class DialogActivity extends AppCompatActivity {
         setContentView(R.layout.activity_dialog);
 
         final Global global = (Global)getApplication();
-        global.Init();
+
 
         Confirm_Button = (Button)findViewById(R.id.confirmButton);
+        className_edittext = (EditText)findViewById(R.id.className);
         Confirm_Button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                global.setColNum(day);
+                if(((hour1-8)*2 + 1 + min1/30)>=((hour2-8)*2 + 1 + min2/30))
+                    Toast.makeText(getApplicationContext(), "시간 설정 오류", Toast.LENGTH_SHORT).show();
+                else {
+                    global.setColNum(day);
+                    global.setStartRow((hour1-8)*2 + 1 + min1/30);
+                    global.setEndRow((hour2-8)*2 + 1 + min2/30);
+                    global.setClassName(className_edittext.getText().toString());
+                    global.setFlag(1);
+                    Intent intent = new Intent(DialogActivity.this, TimeTable2.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    finish();
+                }
+
             }
         });
 
@@ -92,27 +109,27 @@ public class DialogActivity extends AppCompatActivity {
 
                                                 case R.id.Monday:
                                                     dayText.setText("월요일");
-                                                    day=1;
+                                                    day="monday";
                                                     ad.dismiss();
                                                     break;
                                                 case R.id.Tuesday:
                                                     dayText.setText("화요일");
-                                                    day=2;
+                                                    day="tuesday";
                                                     ad.dismiss();
                                                     break;
                                                 case R.id.Wednesday:
                                                     dayText.setText("수요일");
-                                                    day=3;
+                                                    day="wednesday";
                                                     ad.dismiss();
                                                     break;
                                                 case R.id.Thursday:
                                                     dayText.setText("목요일");
-                                                    day=4;
+                                                    day="thursday";
                                                     ad.dismiss();
                                                     break;
                                                 case R.id.Friday:
                                                     dayText.setText("금요일");
-                                                    day=5;
+                                                    day="friday";
                                                     ad.dismiss();
                                                     break;
                                             }
@@ -148,7 +165,20 @@ public class DialogActivity extends AppCompatActivity {
                                         @Override
                                         public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
                                             if (view.isShown()) {
-                                                Time1Text.setText(hourOfDay + ":" + minute);
+                                                if(hourOfDay<8)
+                                                    hour1=8;
+                                                else if (hourOfDay>20) {
+                                                    if(hourOfDay==21 && minute<30)
+                                                        hour1=21;
+                                                    else
+                                                        hour1=20;
+                                                }
+                                                else hour1 = hourOfDay;
+                                                if(minute<30)
+                                                    min1=0;
+                                                else
+                                                    min1=30;
+                                                Time1Text.setText(""+hour1/10 + hour1%10 + ":" + min1/10 + "0");
                                             }
                                         }
                                     };
@@ -162,7 +192,20 @@ public class DialogActivity extends AppCompatActivity {
                                         @Override
                                         public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
                                             if (view.isShown()) {
-                                                Time2Text.setText(hourOfDay + ":" + minute);
+                                                if(hourOfDay<8)
+                                                    hour2=8;
+                                                else if (hourOfDay>20) {
+                                                    if(hourOfDay==21 && minute<30)
+                                                        hour2=21;
+                                                    else
+                                                        hour2=20;
+                                                }
+                                                else hour2 = hourOfDay;
+                                                if(minute<30)
+                                                    min2=0;
+                                                else
+                                                    min2=30;
+                                                Time2Text.setText(""+hour2/10 + hour2%10 + ":" + min2/10 + "0");
                                             }
                                         }
                                     };
