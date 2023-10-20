@@ -19,8 +19,11 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_marginLeft="15dp"
+            android:layout_marginLeft="23dp"
+            android:layout_gravity="right"
             android:text="완료"
+            android:textColor="@color/white"
+            android:background="@color/black"
             android:id="@+id/confirmButton"
             />
     </LinearLayout>
@@ -33,6 +36,7 @@
             android:id="@+id/addview_container"
             android:orientation="vertical"
             android:layout_width="match_parent"
+            android:layout_marginTop="20dp"
             android:layout_height="wrap_content"/>
 
     </ScrollView>
@@ -41,6 +45,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="시간 추가"
+        android:layout_marginTop="20dp"
         android:layout_marginBottom="50dp"
+        android:textColor="@color/white"
+        android:background="@color/black"
         android:id="@+id/TaddButton"/>
 </LinearLayout>

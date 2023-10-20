@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
         TTbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //Intent myIntent = new Intent(MainActivity.this, TimeTable2.class);
                 Intent myIntent = new Intent(MainActivity.this, TimeTable2.class);
                 startActivity(myIntent);
                 //finish();

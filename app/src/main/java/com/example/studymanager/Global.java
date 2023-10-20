@@ -5,7 +5,7 @@ import android.app.Application;
 public class Global extends Application {
 
     private static String tmp, colNum, className;
-    private static int startRow, endRow, flag=0;
+    private static int startRow, endRow, flag=0, c;
 
     /*
     @Override
@@ -76,5 +76,13 @@ public class Global extends Application {
 
     public static String getClassName() {
         return className;
+    }
+
+    public static int getC() {
+        return c;
+    }
+
+    public static void setC(int c) {
+        Global.c = c;
     }
 }
