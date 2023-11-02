@@ -2,6 +2,8 @@ package com.example.studymanager;
 
 import static androidx.constraintlayout.widget.StateSet.TAG;
 
+import static io.grpc.okhttp.internal.Platform.get;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -22,12 +24,17 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DialogActivity extends AppCompatActivity {
@@ -45,6 +52,7 @@ public class DialogActivity extends AppCompatActivity {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private CollectionReference courseRef = db.document("User/Class").collection("cInfo");
     private DocumentReference colorRef = db.document("User/Class");
+    //private CollectionReference timeRef = db.document("User/Class").collection("tInfo");
     int dayID;
     String day = "monday";//, hour1="15", hour2="15", min1="30", min2="30";
     int hour1=15, hour2=15, min1=30, min2=30;
@@ -66,90 +74,137 @@ public class DialogActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if(((hour1-8)*2 + 1 + min1/30)>=((hour2-8)*2 + 1 + min2/30))
                     Toast.makeText(getApplicationContext(), "시간 설정 오류", Toast.LENGTH_SHORT).show();
+
+
                 else {
-
-                    global.setColNum(day);
-                    global.setStartRow((hour1-8)*2 + 1 + min1/30);
-                    global.setEndRow((hour2-8)*2 + 1 + min2/30);
-                    global.setClassName(className_edittext.getText().toString());
-                    global.setFlag(1);
-
-                    /*
-                    Map<String, Object> course = new HashMap<>();
-                    course.put(KEY_DAY, day);
-                    course.put(KEY_STARTTIME, (hour1-8)*2 + 1 + min1/30);
-                    course.put(KEY_ENDTIME, (hour2-8)*2 + 1 + min2/30);*/
-
-                    colorRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                @Override
-                                public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                    if(documentSnapshot.exists()) {
-                                        Color color = documentSnapshot.toObject(Color.class);
-                                        c = color.getColor();
-                                        ++c;
-                                        global.setC(c%7);
-                                        color.setColor(c%7);
-                                        colorRef.set(color).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void unused) {
-                                                Toast.makeText(DialogActivity.this, "New color", Toast.LENGTH_SHORT).show();
-                                            }
-                                        }).addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                Log.d(TAG, e.toString());
-                                            }
-                                        });
-
-                                    }
-
-                                    else {
-                                        global.setC(1);
-                                        Color color = new Color(global.getC());
-                                        colorRef.set(color).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void unused) {
-                                                Toast.makeText(DialogActivity.this, "Added new color", Toast.LENGTH_SHORT).show();
-                                            }
-                                        }).addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                Log.d(TAG, e.toString());
-                                            }
-                                        });
-                                    }
-
-                                }
-
-                            }).addOnFailureListener(new OnFailureListener() {
+                    Task task1 = courseRef.whereGreaterThanOrEqualTo("sTime", (hour1-8)*2 + 1 + min1/30)
+                                    .whereLessThan("sTime", (hour2-8)*2 + 1 + min2/30)
+                                            .whereEqualTo("day", day)
+                                                    .get();
+                    Task task2 = courseRef.whereGreaterThan("eTime", (hour1-8)*2 + 1 + min1/30)
+                            .whereLessThanOrEqualTo("eTime", (hour2-8)*2 + 1 + min2/30)
+                            .whereEqualTo("day", day)
+                            .get();
+                    //Task allTasks = Tasks.whenAllSuccess(task1, task2)
+                    Task<List<QuerySnapshot>> allTasks = Tasks.whenAllSuccess(task1, task2);
+                    allTasks.addOnSuccessListener(new OnSuccessListener<List<QuerySnapshot>>() {
                         @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.d(TAG, e.toString());
+                        public void onSuccess(List<QuerySnapshot> querySnapshots) {
+                            int tcf=0;
+                            for(QuerySnapshot queryDocumentSnapshots : querySnapshots) {
+                                for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                                    ++tcf;
+                                }
+                            }
+                            if(tcf>0)
+                            {
+                                Toast.makeText(DialogActivity.this, "시간 중복", Toast.LENGTH_SHORT).show();
+                            }
+
+                            else {
+                                global.setColNum(day);
+                                global.setStartRow((hour1-8)*2 + 1 + min1/30);
+                                global.setEndRow((hour2-8)*2 + 1 + min2/30);
+                                global.setClassName(className_edittext.getText().toString());
+                                global.setFlag(1);
+
+                                colorRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                        if(documentSnapshot.exists()) {
+                                            Color color = documentSnapshot.toObject(Color.class);
+                                            c = color.getColor();
+                                            ++c;
+                                            global.setC(c%7);
+                                            color.setColor(c%7);
+                                            colorRef.set(color).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void unused) {
+                                                    Toast.makeText(DialogActivity.this, "New color", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }).addOnFailureListener(new OnFailureListener() {
+                                                @Override
+                                                public void onFailure(@NonNull Exception e) {
+                                                    Log.d(TAG, e.toString());
+                                                }
+                                            });
+
+                                        }
+
+                                        else {
+                                            global.setC(0);
+                                            Color color = new Color(global.getC());
+                                            colorRef.set(color).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void unused) {
+                                                    Toast.makeText(DialogActivity.this, "Added new color", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }).addOnFailureListener(new OnFailureListener() {
+                                                @Override
+                                                public void onFailure(@NonNull Exception e) {
+                                                    Log.d(TAG, e.toString());
+                                                }
+                                            });
+                                        }
+
+                                        Course course = new Course(day, (hour1-8)*2 + 1 + min1/30, (hour2-8)*2 + 1 + min2/30, false, global.getC());
+
+                                        courseRef.document(global.getClassName()).set(course)
+                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void unused) {
+                                                        Toast.makeText(DialogActivity.this, "강의 추가 성공", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                })
+                                                .addOnFailureListener(new OnFailureListener() {
+                                                    @Override
+                                                    public void onFailure(@NonNull Exception e) {
+                                                        Toast.makeText(DialogActivity.this, "Error", Toast.LENGTH_SHORT).show();
+                                                        Log.d(TAG, e.toString());
+                                                    }
+                                                });
+                                        Intent intent = new Intent(DialogActivity.this, TimeTable2.class);
+                                        //Intent intent = new Intent(DialogActivity.this, Test.class);
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                        startActivity(intent);
+                                        finish();
+                                    }
+
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.d(TAG, e.toString());
+                                    }
+                                });
+
+                                /*
+                                Course course = new Course(day, (hour1-8)*2 + 1 + min1/30, (hour2-8)*2 + 1 + min2/30, false, global.getC());
+
+                                courseRef.document(global.getClassName()).set(course)
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void unused) {
+                                                Toast.makeText(DialogActivity.this, "강의 추가 성공", Toast.LENGTH_SHORT).show();
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Toast.makeText(DialogActivity.this, "Error", Toast.LENGTH_SHORT).show();
+                                                Log.d(TAG, e.toString());
+                                            }
+                                        });
+                                Intent intent = new Intent(DialogActivity.this, TimeTable2.class);
+                                //Intent intent = new Intent(DialogActivity.this, Test.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                startActivity(intent);
+                                finish();
+                                */
+                            }
                         }
                     });
 
-                    Course course = new Course(day, (hour1-8)*2 + 1 + min1/30, (hour2-8)*2 + 1 + min2/30, false, global.getC());
 
-
-                    courseRef.document(global.getClassName()).set(course)
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void unused) {
-                                    Toast.makeText(DialogActivity.this, "강의 추가 성공", Toast.LENGTH_SHORT).show();
-                                }
-                            })
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Toast.makeText(DialogActivity.this, "Error", Toast.LENGTH_SHORT).show();
-                                    Log.d(TAG, e.toString());
-                                }
-                            });
-                    Intent intent = new Intent(DialogActivity.this, TimeTable2.class);
-                    //Intent intent = new Intent(DialogActivity.this, Test.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
-                    finish();
                 }
 
             }
@@ -323,6 +378,26 @@ public class DialogActivity extends AppCompatActivity {
 
         //아까 만든 공간에 크기에 맞는 버튼을 생성함.
 
+    }
+
+    public int dayToNum(String day)
+    {
+        if (day.equals("monday"))
+            return 1;
+        else if (day.equals("tuesday"))
+            return 2;
+        else if (day.equals("wednesday"))
+            return 3;
+        else if (day.equals("thursday"))
+            return 4;
+        else if (day.equals("friday"))
+            return 5;
+        else if (day.equals("saturday"))
+            return 6;
+        else if (day.equals("sunday"))
+            return 7;
+        else
+            return 0;
     }
 
 }
