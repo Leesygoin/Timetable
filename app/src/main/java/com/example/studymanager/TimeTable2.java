@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -22,6 +23,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -146,24 +148,24 @@ public class TimeTable2 extends AppCompatActivity {
             }
         });
 
+        //timeClick()
+
         clickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(TimeTable2.this);
-                AlertDialog ad = builder.create();
-                //final View innerView = getLayoutInflater().inflate(R.layout.activity_add_day_view, null);
-                //final EditText Cname = findViewById(R.id.className);
-
-                ad.setIcon(R.mipmap.ic_launcher);
-                ad.setTitle("삭제하시겠습니까?");
-                //ad.setView(innerView);
+                //AlertDialog ad = builder.create();
+                //ad.setIcon(R.mipmap.ic_launcher);
+                //ad.setTitle("삭제하시겠습니까?");
+                TextView tv = (TextView) v;
+                builder.setTitle("delete?" + tv.getText());
 
                 builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        finish();
-
-                        startActivity(new Intent(TimeTable2.this, TimeTable2.class));
+                        courseRef.document(""+tv.getText()).delete();
+                        //finish();
+                        recreate();
                     }
                 });
 
@@ -173,7 +175,7 @@ public class TimeTable2 extends AppCompatActivity {
                         dialog.dismiss();
                     }
                 });
-                ad.show();
+                builder.show();
             }
         };
 
@@ -187,6 +189,7 @@ public class TimeTable2 extends AppCompatActivity {
 
             }
         });
+
     }
 
     @Override

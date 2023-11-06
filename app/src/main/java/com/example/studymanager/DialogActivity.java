@@ -72,7 +72,11 @@ public class DialogActivity extends AppCompatActivity {
         Confirm_Button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(((hour1-8)*2 + 1 + min1/30)>=((hour2-8)*2 + 1 + min2/30))
+                //String cName = className_edittext.getText();
+                if(className_edittext.getText().toString() == "")
+                    Toast.makeText(getApplicationContext(), "강의명 입력 필요", Toast.LENGTH_SHORT).show();
+
+                else if(((hour1-8)*2 + 1 + min1/30)>=((hour2-8)*2 + 1 + min2/30))
                     Toast.makeText(getApplicationContext(), "시간 설정 오류", Toast.LENGTH_SHORT).show();
 
 
@@ -222,9 +226,9 @@ public class DialogActivity extends AppCompatActivity {
                     //conLinear.setId(VIEW_ID+viewNum);
                     View layout = inflater.inflate(R.layout.activity_add_time_view, conLinear);
 
-                    dayText = findViewById(R.id.day_textview);
-                    Time1Text = findViewById(R.id.time1_textview);
-                    Time2Text = findViewById(R.id.time2_textview);
+                    dayText = layout.findViewById(R.id.day_textview);
+                    Time1Text = layout.findViewById(R.id.time1_textview);
+                    Time2Text = layout.findViewById(R.id.time2_textview);
 
 
                     clickListener = new View.OnClickListener() {
